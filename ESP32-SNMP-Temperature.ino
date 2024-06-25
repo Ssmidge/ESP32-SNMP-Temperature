@@ -194,6 +194,7 @@ void setup() {
 
   #ifdef SNMP_ENABLED
   // SNMP setup
+  // give snmp a pointer to the UDP object
   snmp.setUDP(&udp);
   snmp.begin();
 
@@ -235,6 +236,15 @@ void loop() {
         lastUptimeUpdateTime += UPTIME_UPDATE_INTERVAL;
         sysUptime = getUptime();
     }
+    // Read Sensor Values
+    if (millis() - lastSensorUpdateTime >= SENSOR_UPDATE_INTERVAL)
+    {
+        lastSensorUpdateTime += SENSOR_UPDATE_INTERVAL;
+        entPhySensorValue_1 = readTemperatureSensor();
+        entPhySensorValueTimeStamp_1 = sysUptime;
+        entPhySensorValue_2 = readHumiditySensor();
+        entPhySensorValueTimeStamp_2 = sysUptime;
+    }
 
   #endif
 
@@ -253,7 +263,7 @@ int readTemperatureSensor()
     return 0; // Return 0 if there is an error
   }
 
-  int intTemperature = (int)(temp);
+  int intTemperature = (int)(temp * 100);
   return intTemperature;
 }
 
@@ -267,7 +277,7 @@ int readHumiditySensor()
     return 0; // Return 0 if there is an error
   }
 
-  int intHumidity = (int)(humidity);
+  int intHumidity = (int)(humidity * 100);
   return intHumidity;
 }
 
@@ -432,4 +442,25 @@ void addENTITYSENSORMIBHandler()
     snmp.addReadOnlyStaticStringHandler(oidentPhySensorUnitsDisplay_2, entPhySensorUnitsDisplay_2);
     snmp.addTimestampHandler(oidentPhySensorValueTimeStamp_2, &entPhySensorValueTimeStamp_2);
     snmp.addIntegerHandler(oidentPhySensorValueUpdateRate_2, &entPhySensorValueUpdateRate_2);
+}
+
+void handleMetrics() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor!");
+    server.send(500, "text/plain", "Failed to read from DHT sensor!");
+    return;
+  }
+
+  String metrics = "# HELP dht22_humidity Humidity measured by the DHT22 sensor.\n";
+  metrics += "# TYPE dht22_humidity gauge\n";
+  metrics += "dht22_humidity " + String(h) + "\n";
+  metrics += "# HELP dht22_temperature Temperature measured by the DHT22 sensor.\n";
+  metrics += "# TYPE dht22_temperature gauge\n";
+  metrics += "dht22_temperature " + String(t) + "\n";
+
+  server.send(200, "text/plain; version=0.0.4", metrics);
 }
