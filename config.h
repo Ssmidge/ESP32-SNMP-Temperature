@@ -16,6 +16,10 @@ const char *password = "PASSWORD"; // and this is the password
 const char* readOnlyCommunity = "public";  // Read only community string
 const char* readWriteCommunity = "private"; // Read Write community string for set commands
 
+// The manufacturer name, usually just your name.
+std::string entPhysicalMfgName_1 = "Ssmidge Technologies";
+
+
 //************************************
 //* Sensor Configuration             *
 //************************************
