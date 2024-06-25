@@ -154,6 +154,8 @@ bool loadSNMPValues();
 bool saveSNMPValues();
 void printFile(const char* filename);
 uint64_t uptimeMillis();
+int readTemperatureSensor();
+int readHumiditySensor();
 //************************************
 void setup() {
   Serial.begin(115200);
@@ -215,6 +217,58 @@ void setup() {
   // Ensure to sortHandlers after adding/removing and OID callbacks - this makes snmpwalk work
   snmp.sortHandlers();
   #endif
+}
+
+void loop() {
+  #ifdef SNMP_ENABLED
+  snmp.loop(); // must be called as often as possible
+
+  if (snmp.setOccurred)
+    {
+        Serial.println("A Set event has occured.");
+        saveSNMPValues(); // Store the values
+        snmp.resetSetOccurred();
+    }
+    // Periodically update Uptime. Don't need to update it on every loop as it can interfere with responding to SNMP requests
+    if (millis() - lastUptimeUpdateTime >= UPTIME_UPDATE_INTERVAL)
+    {
+        lastUptimeUpdateTime += UPTIME_UPDATE_INTERVAL;
+        sysUptime = getUptime();
+    }
+
+  #endif
+
+  #ifdef PROMETHEUS_ENABLED
+  server.handleClient();
+  #endif
+}
+
+int readTemperatureSensor()
+{
+  float temp = dht.readTemperature();
+  
+  // Check if the reading failed
+  if (isnan(temp)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return 0; // Return 0 if there is an error
+  }
+
+  int intTemperature = (int)(temp);
+  return intTemperature;
+}
+
+int readHumiditySensor()
+{
+  float humidity = dht.readHumidity();
+  
+  // Check if the reading failed
+  if (isnan(humidity)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return 0; // Return 0 if there is an error
+  }
+
+  int intHumidity = (int)(humidity);
+  return intHumidity;
 }
 
 #if defined(ESP32)
