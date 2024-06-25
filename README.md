@@ -10,4 +10,9 @@ I started researching on the available libraries and existing projects for an ES
 | DHT22    | 5 USD           | Needs atleast 3 pins           |
 
 ## Setup
-COMING SOON.
+1. Download the repository using the "Download as ZIP" button.
+2. Change the SSID and password to your WiFi network's details.
+3. Change the data pin for the DHT(11/22) sensor, and finally download it to your ESP32 (ESP8266 is untested) using the Arduino IDE.
+4. Connect to the board using a baud rate of 115200.
+5. To test, open http://IP/metrics in a web browser
+6. Enjoy!
