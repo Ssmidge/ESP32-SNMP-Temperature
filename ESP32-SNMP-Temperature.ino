@@ -39,7 +39,7 @@ const char* savedValuesFile = "/SNMP.json";
 // SNMP Objects
 WiFiUDP udp;
 
-SNMPAgent snmp = SNMPAgent(readOnlyCommunity, readWriteCommunity); // Creates an SMMPAgent instance
+SNMPAgent snmp = SNMPAgent(readOnlyCommunity, readWriteCommunity); // Creates an SNMPAgent instance
 // RFC1213-MIB (System)
 char* oidSysDescr = ".1.3.6.1.2.1.1.1.0";    // OctetString SysDescr
 char* oidSysObjectID = ".1.3.6.1.2.1.1.2.0"; // OctetString SysObjectID
